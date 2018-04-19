@@ -2,10 +2,14 @@ const Promise = require('bluebird');
 const mongoose = require('mongoose');
 const httpStatus = require('http-status');
 const APIError = require('../helpers/APIError');
-
+const bcrypt = require('bcrypt');
 /**
  * User Schema
  */
+
+
+const SALT_WORK_FACTOR = 10;
+
 const UserSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -16,12 +20,44 @@ const UserSchema = new mongoose.Schema({
     required: true,
     match: [/^[1-9][0-9]{9}$/, 'The value of path {PATH} ({VALUE}) is not a valid mobile number.']
   },
+  email: {
+    type: String,
+    required: true,
+    match: [/^([\w-.]+@([\w-]+\.)+[\w-]{2,4})?$/, 'The value of path {PATH} ({VALUE}) is not a valid email.']
+  },
+  password: {
+    type: String,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
+// generate a salt
+// eslint-disable-next-line consistent-return
+UserSchema.pre('save', function dummy(next) {
+  const user = this;
 
+// only hash the password if it has been modified (or is new)
+  if (!user.isModified('password')) return next();
+
+// generate a salt
+  // eslint-disable-next-line consistent-return
+  bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
+    if (err) return next(err);
+
+    // hash the password along with our new salt
+    // eslint-disable-next-line
+    bcrypt.hash(user.password, salt, (err, hash) => {
+      if (err) return next(err);
+
+      // override the cleartext password with the hashed one
+      user.password = hash;
+      next();
+    });
+  });
+});
 /**
  * Add your
  * - pre-save hooks
@@ -32,8 +68,14 @@ const UserSchema = new mongoose.Schema({
 /**
  * Methods
  */
-UserSchema.method({
-});
+
+UserSchema.methods.comparePassword = function dummy(candidatePassword, cb) {
+  // eslint-disable-next-line consistent-return
+  bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
+    if (err) return cb(err);
+    cb(null, isMatch);
+  });
+};
 
 /**
  * Statics
