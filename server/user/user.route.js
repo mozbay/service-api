@@ -7,7 +7,12 @@ const router = express.Router(); // eslint-disable-line new-cap
 
 router.route('/')
   /** GET /api/users - Get list of users */
-  .get(userCtrl.list)
+  .get(userCtrl.list);
+
+router.route('/findUser')
+/** POST /api/users?
+ * uName=&pass=- Get find user */
+  .post(userCtrl.findUser)
 
   /** POST /api/users - Create new user */
   .post(validate(paramValidation.createUser), userCtrl.create);

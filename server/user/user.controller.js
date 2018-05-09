@@ -20,6 +20,7 @@ function get(req, res) {
   return res.json(req.user);
 }
 
+
 /**
  * Create new user
  * @property {string} req.body.username - The username of user.
@@ -70,6 +71,13 @@ function list(req, res, next) {
     .catch(e => next(e));
 }
 
+function findUser(req, res, next) {
+  User.find({ username: req.body.uName, password: req.body.pass },
+        (err, user) => {             // eslint-disable-line
+          if (err) return next(err);
+          res.json(user);
+        });
+}
 /**
  * Delete user.
  * @returns {User}
@@ -80,5 +88,4 @@ function remove(req, res, next) {
     .then(deletedUser => res.json(deletedUser))
     .catch(e => next(e));
 }
-
-module.exports = { load, get, create, update, list, remove };
+module.exports = { load, get, create, update, list, findUser, remove };
