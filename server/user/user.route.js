@@ -12,9 +12,10 @@ router.route('/')
 router.route('/findUser')
 /** POST /api/users?
  * uName=&pass=- Get find user */
-  .post(userCtrl.findUser)
+  .post(userCtrl.findUser);
 
   /** POST /api/users - Create new user */
+router.route('/')
   .post(validate(paramValidation.createUser), userCtrl.create);
 
 router.route('/:userId')
